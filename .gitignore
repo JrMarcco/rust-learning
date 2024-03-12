@@ -2,6 +2,6 @@
 *.log
 .idea
 log/
-target/
+**/target/
 
 **/tmp/

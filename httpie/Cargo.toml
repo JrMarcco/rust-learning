@@ -1,0 +1,19 @@
+[package]
+name = "httpie"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.80" # 错误处理
+clap = {version = "4.5.1", features = ["derive"]} # 命令行解析
+colored = "2.1.0" # 终端彩色显示
+jsonxf = "1.1.1" # json 格式化
+mime = "0.3.17" # 处理 mime 类型
+# reqwest 默认使用 openssl
+# 在没有安装 openssl 的情况下会无法编译
+# 所以这里改成使用 rustls
+reqwest = {version = "0.11.24", default-features = false, features = ["json", "rustls-tls"]} # http 客户端
+tokio = {version = "1.36.0", features = ["full"]} # 异步处理库
+syntect = "5.2.0"
