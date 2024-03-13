@@ -1,10 +1,10 @@
 *.iml
 *.log
-.idea
+*.lock
+*.out
 
-Cargo.lock
+**/*.rs.bk
 
-log/
 **/target/
-
 **/tmp/
+.idea
