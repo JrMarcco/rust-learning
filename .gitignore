@@ -1,6 +1,9 @@
 *.iml
 *.log
 .idea
+
+Cargo.lock
+
 log/
 **/target/
 
