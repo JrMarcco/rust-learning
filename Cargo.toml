@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "demo",
+    "grep",
     "httpie",
     "queryer",
     "thumbor",
