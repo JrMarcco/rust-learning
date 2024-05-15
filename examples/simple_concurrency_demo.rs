@@ -35,7 +35,6 @@ fn producer(idx: usize, tx: mpsc::Sender<Msg>) -> Result<()> {
     Ok(())
 }
 
-
 fn main() -> Result<()> {
     let (tx, rx) = mpsc::channel();
 
