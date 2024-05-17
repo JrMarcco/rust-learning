@@ -42,7 +42,7 @@ fn main() -> Result<()> {
         let sender = tx.clone();
         thread::spawn(move || producer(i, sender));
     }
-    // 释放 tx 否则 tx 结束
+    // 释放 tx 否则 tx 无法结束
     drop(tx);
 
     let consumer = thread::spawn(move || {

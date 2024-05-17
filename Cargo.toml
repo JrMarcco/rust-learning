@@ -8,6 +8,7 @@ license = "MIT"
 
 [dependencies]
 anyhow = "1.0.83"
+oneshot = "0.1.6"
 rand = "0.8.5"
 
 
