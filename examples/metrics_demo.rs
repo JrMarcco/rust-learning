@@ -18,9 +18,9 @@ impl Metrics {
         }
     }
 
-    fn incr(&self, key: String, delta: u64) -> Result<()> {
+    fn incr(&self, key: impl Into<String>, delta: u64) -> Result<()> {
         let mut data = self.data.write().map_err(|e| anyhow!(e.to_string()))?;
-        let counter = data.entry(key).or_insert(0);
+        let counter = data.entry(key.into()).or_insert(0);
         *counter += delta;
 
         Ok(())
@@ -36,6 +36,7 @@ impl Metrics {
     }
 }
 
+#[allow(unreachable_code)]
 fn main() {
     let metrics = Metrics::new();
 
@@ -46,10 +47,9 @@ fn main() {
                 let mut rng = rand::thread_rng();
 
                 thread::sleep(Duration::from_secs(rng.gen_range(1..10)));
-                cloned_metrics.incr("first".into(), 1)?;
+                cloned_metrics.incr("first", 1)?;
             }
 
-            #[allow(unreachable_code)]
             Ok::<_, anyhow::Error>(())
         });
     }
@@ -61,10 +61,9 @@ fn main() {
                 let mut rng = rand::thread_rng();
 
                 thread::sleep(Duration::from_millis(rng.gen_range(500..1000)));
-                cloned_metrics.incr("second".into(), 1)?;
+                cloned_metrics.incr("second", 1)?;
             }
 
-            #[allow(unreachable_code)]
             Ok::<_, anyhow::Error>(())
         });
     }
