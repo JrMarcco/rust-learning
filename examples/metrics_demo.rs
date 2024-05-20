@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 
@@ -8,18 +8,18 @@ use rand::Rng;
 
 #[derive(Debug, Clone)]
 struct Metrics {
-    data: Arc<Mutex<HashMap<String, u64>>>,
+    data: Arc<RwLock<HashMap<String, u64>>>,
 }
 
 impl Metrics {
     fn new() -> Self {
         Self {
-            data: Arc::new(Mutex::new(HashMap::new())),
+            data: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
     fn incr(&self, key: String, delta: u64) -> Result<()> {
-        let mut data = self.data.lock().map_err(|e| anyhow!(e.to_string()))?;
+        let mut data = self.data.write().map_err(|e| anyhow!(e.to_string()))?;
         let counter = data.entry(key).or_insert(0);
         *counter += delta;
 
@@ -29,7 +29,7 @@ impl Metrics {
     fn snapshot(&self) -> Result<HashMap<String, u64>> {
         Ok(self
             .data
-            .lock()
+            .read()
             .map_err(|e| anyhow!(e.to_string()))
             .unwrap()
             .clone())
@@ -41,21 +41,31 @@ fn main() {
 
     for _i in 0..4 {
         let cloned_metrics = metrics.clone();
-        thread::spawn(move || loop {
-            let mut rng = rand::thread_rng();
+        thread::spawn(move || {
+            loop {
+                let mut rng = rand::thread_rng();
 
-            thread::sleep(Duration::from_secs(rng.gen_range(1..10)));
-            cloned_metrics.incr("first".into(), 1).unwrap();
+                thread::sleep(Duration::from_secs(rng.gen_range(1..10)));
+                cloned_metrics.incr("first".into(), 1)?;
+            }
+
+            #[allow(unreachable_code)]
+            Ok::<_, anyhow::Error>(())
         });
     }
 
     for _i in 0..4 {
         let cloned_metrics = metrics.clone();
-        thread::spawn(move || loop {
-            let mut rng = rand::thread_rng();
+        thread::spawn(move || {
+            loop {
+                let mut rng = rand::thread_rng();
 
-            thread::sleep(Duration::from_millis(rng.gen_range(500..1000)));
-            cloned_metrics.incr("second".into(), 1).unwrap();
+                thread::sleep(Duration::from_millis(rng.gen_range(500..1000)));
+                cloned_metrics.incr("second".into(), 1)?;
+            }
+
+            #[allow(unreachable_code)]
+            Ok::<_, anyhow::Error>(())
         });
     }
 
