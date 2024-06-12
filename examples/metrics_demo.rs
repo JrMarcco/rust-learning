@@ -40,7 +40,7 @@ impl Metrics {
 fn main() {
     let metrics = Metrics::new();
 
-    for _i in 0..4 {
+    for _ in 0..4 {
         let cloned_metrics = metrics.clone();
         thread::spawn(move || {
             loop {
@@ -54,7 +54,7 @@ fn main() {
         });
     }
 
-    for _i in 0..4 {
+    for _ in 0..4 {
         let cloned_metrics = metrics.clone();
         thread::spawn(move || {
             loop {
