@@ -19,7 +19,7 @@ pub(crate) fn process_enum_from(input: DeriveInput) -> TokenStream {
                 if fields.unnamed.len() != 1 {
                     quote! {}
                 } else {
-                    let field = fields.unnamed.first().expect("should have one field.");
+                    let field = fields.unnamed.first().expect("Should have one field.");
                     let ty = &field.ty;
 
                     quote! {

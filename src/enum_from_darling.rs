@@ -27,7 +27,7 @@ pub(crate) fn process_enum_from_darling(input: DeriveInput) -> TokenStream {
         ident,
         generics,
         data: Data::Enum(variants),
-    } = EnumFromDarling::from_derive_input(&input).expect("can not parse input.")
+    } = EnumFromDarling::from_derive_input(&input).expect("Can not parse input.")
     else {
         panic!("EnumFromDarling only works on enums.")
     };
@@ -42,7 +42,7 @@ pub(crate) fn process_enum_from_darling(input: DeriveInput) -> TokenStream {
                     .fields
                     .iter()
                     .next()
-                    .expect("should have one field.");
+                    .expect("Should have one field.");
                 let ty = &field.ty;
 
                 quote! {

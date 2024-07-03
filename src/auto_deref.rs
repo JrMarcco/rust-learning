@@ -27,7 +27,7 @@ pub(crate) fn process_auto_deref(input: DeriveInput) -> TokenStream {
         data: Data::Struct(fields),
         field,
         mutable,
-    } = AutoDerefStruct::from_derive_input(&input).expect("can not parse input.")
+    } = AutoDerefStruct::from_derive_input(&input).expect("Can not parse input.")
     else {
         panic!("AutoDeref only works on struct.")
     };
