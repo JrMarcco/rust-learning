@@ -26,13 +26,13 @@ pub(crate) fn process_enum_from_darling(input: DeriveInput) -> TokenStream {
     let EnumFromDarling {
         ident,
         generics,
-        data: Data::Enum(data),
+        data: Data::Enum(variants),
     } = EnumFromDarling::from_derive_input(&input).expect("can not parse input.")
     else {
         panic!("EnumFromDarling only works on enums.")
     };
 
-    let impls = data.iter().map(|variant| {
+    let impls = variants.iter().map(|variant| {
         let var_ident = &variant.ident;
         let style = &variant.fields.style;
 
