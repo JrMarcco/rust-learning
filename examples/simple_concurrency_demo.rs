@@ -21,8 +21,8 @@ impl Msg {
 
 fn producer(idx: usize, tx: mpsc::Sender<Msg>) -> Result<()> {
     loop {
-        let val = rand::random::<usize>();
-        tx.send(Msg::new(idx, val))?;
+        let val = rand::random::<u64>();
+        tx.send(Msg::new(idx, val as usize))?;
 
         let sleep_time = rand::random::<u8>();
         if sleep_time % 5 == 0 {
