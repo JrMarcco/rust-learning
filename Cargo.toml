@@ -26,5 +26,10 @@ chrono = { version = "0.4.38", features = ["serde"] }
 tokio = { version = "1.40.0", features = ["rt", "rt-multi-thread", "macros"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing-opentelemetry = "0.25.0"
 axum = { version = "0.7.5", features = ["http2", "query", "tracing"] }
 tracing-appender = "0.2.3"
+opentelemetry = "0.24.0"
+opentelemetry-otlp = { version = "0.17.0", features = ["tonic"] }
+opentelemetry_sdk = { version = "0.24.1", features = ["rt-tokio"] }
+opentelemetry-semantic-conventions = "0.16.0"
