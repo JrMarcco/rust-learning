@@ -20,6 +20,8 @@ struct Ipsum {
     name: String,
     #[builder(try_setter, setter(into, name = "foo"))]
     dolor: u8,
+    #[builder(default = "vec![]", setter(each(name = "tag", into)))]
+    tags: Vec<String>,
 }
 
 impl IpsumBuilder {
@@ -47,9 +49,14 @@ fn main() -> Result<()> {
 
     let ipsum = IpsumBuilder::default()
         .try_foo(1u16)?
+        .tag("first")
+        .tag("second")
         .build()
         .expect("1 fits into a u8");
-    println!("{:?}, {} {}", ipsum, ipsum.name, ipsum.dolor);
+    println!(
+        "{:?}, {} {} {:?}",
+        ipsum, ipsum.name, ipsum.dolor, ipsum.tags
+    );
 
     Ok(())
 }
