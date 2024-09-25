@@ -37,6 +37,10 @@ enum Message {
 #[tokio::main]
 async fn main() -> Result<()> {
     let layer = Layer::new().pretty().with_filter(LevelFilter::INFO);
+
+    // should build or run with flags:
+    // RUSTFLAGS="--cfg tokio_unstable" cargo build
+    // RUSTFLAGS="--cfg tokio_unstable" cargo run --example chat_server
     let console_layer = console_subscriber::spawn();
 
     tracing_subscriber::registry()
