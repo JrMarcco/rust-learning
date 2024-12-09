@@ -1,10 +1,13 @@
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use axum::routing::get;
 use axum::Router;
-use opentelemetry::trace::TracerProvider;
+use once_cell::sync::Lazy;
 use opentelemetry::{global, KeyValue};
-use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::trace::{RandomIdGenerator, Tracer};
+use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+use opentelemetry_otlp::{LogExporter, MetricExporter, WithExportConfig};
+use opentelemetry_sdk::logs::LoggerProvider;
+use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
+use opentelemetry_sdk::trace::{RandomIdGenerator, TracerProvider};
 use opentelemetry_sdk::{runtime, trace, Resource};
 use opentelemetry_semantic_conventions::resource;
 use tokio::net::TcpListener;
@@ -15,6 +18,14 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     Layer,
 };
+
+static RESOURCE: Lazy<Resource> = Lazy::new(|| {
+    Resource::new(vec![
+        KeyValue::new(resource::SERVICE_NAME, "axum-tracing-example"),
+        KeyValue::new(resource::SERVICE_VERSION, "0.0.1"),
+        KeyValue::new(resource::SERVICE_NAMESPACE, "jrmarcco"),
+    ])
+});
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -29,14 +40,20 @@ async fn main() -> Result<()> {
         .with_writer(non_blocking)
         .with_filter(LevelFilter::INFO);
 
-    let tracer = init_tracer()?;
-    let oltp = tracing_opentelemetry::layer().with_tracer(tracer);
+    let tracer_provider = init_tracer_provider()?;
+    global::set_tracer_provider(tracer_provider.clone());
 
-    tracing_subscriber::registry()
+    let metrics_provider = init_metrics()?;
+    global::set_meter_provider(metrics_provider.clone());
+
+    let logger_provider = init_logs()?;
+    let logger_layer = OpenTelemetryTracingBridge::new(&logger_provider);
+
+    let _ = tracing_subscriber::registry()
         .with(console_layer)
         .with(file_layer)
-        .with(oltp)
-        .init();
+        .with(logger_layer)
+        .try_init();
 
     let addr = "0.0.0.0:8080";
     let app = Router::new().route("/", get(index_handler));
@@ -47,32 +64,43 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+fn init_tracer_provider() -> Result<TracerProvider> {
+    let exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_tonic()
+        .with_endpoint("http://localhost:4317")
+        .build()?;
+
+    Ok(trace::TracerProvider::builder()
+        .with_resource(RESOURCE.clone())
+        .with_id_generator(RandomIdGenerator::default())
+        .with_batch_exporter(exporter, runtime::Tokio)
+        .build())
+}
+
+fn init_metrics() -> Result<SdkMeterProvider> {
+    let exporter = MetricExporter::builder().with_tonic().build()?;
+
+    let reader = PeriodicReader::builder(exporter, runtime::Tokio).build();
+
+    Ok(SdkMeterProvider::builder()
+        .with_reader(reader)
+        .with_resource(RESOURCE.clone())
+        .build())
+}
+
+fn init_logs() -> Result<LoggerProvider> {
+    let exporter = LogExporter::builder()
+        .with_tonic()
+        .with_endpoint("http://localhost:4317")
+        .build()?;
+
+    Ok(LoggerProvider::builder()
+        .with_resource(RESOURCE.clone())
+        .with_batch_exporter(exporter, runtime::Tokio)
+        .build())
+}
+
 #[instrument]
 async fn index_handler() -> &'static str {
     "Hello, World"
-}
-
-fn init_tracer() -> Result<Tracer> {
-    let tracer_provider = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint("http://localhost:4317"),
-        )
-        .with_trace_config(
-            trace::Config::default()
-                .with_resource(Resource::new(vec![
-                    KeyValue::new(resource::SERVICE_NAME, "axum-tracing-example"),
-                    KeyValue::new(resource::SERVICE_VERSION, "0.0.1"),
-                    KeyValue::new(resource::SERVICE_NAMESPACE, "jrmarcco"),
-                ]))
-                .with_id_generator(RandomIdGenerator::default()),
-        )
-        .install_batch(runtime::Tokio)?;
-
-    global::set_tracer_provider(tracer_provider.clone());
-
-    let tracer = tracer_provider.tracer("axum-tracing-example");
-    Ok(tracer)
 }

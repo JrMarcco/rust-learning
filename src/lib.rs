@@ -33,3 +33,11 @@ pub fn derive_auto_debug(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as DeriveInput);
     process_auto_debug(input).into()
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_for_git_commit() {
+        assert_eq!(1 + 1, 2);
+    }
+}
