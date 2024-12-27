@@ -112,6 +112,11 @@ exceptions = [
     #{ allow = ["Zlib"], crate = "adler32" },
 ]
 
+[[licenses.clarify]]
+crate = "ring"
+expression = "MIT AND ISC"
+license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
+
 # Some crates don't have (easily) machine-readable licensing information,
 # adding a clarification entry for it allows you to manually specify the
 # licensing information
